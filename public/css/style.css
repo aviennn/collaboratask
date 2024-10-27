@@ -1,0 +1,67 @@
+/* Profile Picture Container */
+.profile-picture-container {
+    position: relative;
+    width: 160px; /* Width of the profile container */
+    height: 160px; /* Height of the profile container */
+    margin: 0 auto; /* Center the profile container */
+}
+
+/* Border around the profile picture */
+.profile-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Make sure the border fits */
+    border-radius: 50%; /* Circular border */
+    z-index: 1; /* Ensure the border is behind the profile picture */
+}
+
+/* Profile Picture */
+.profile-picture {
+    position: relative;
+    width: 140px; /* Adjust size so that it fits within the border */
+    height: 140px;
+    object-fit: cover; /* Make sure the picture fits properly */
+    border-radius: 50%; /* Circular profile picture */
+    z-index: 2; /* Ensure the profile picture is above the border */
+    top: 10px; /* Offset the profile picture to center it inside the border */
+    left: 10px;
+}
+
+
+/* For border items */
+.border-selection-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100px; /* Fixed width for border items */
+    cursor: pointer; /* Make it clear that it's clickable */
+}
+
+.border-item img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 50%; /* Ensure all borders are circular */
+    transition: box-shadow 0.2s ease-in-out; /* Smooth transition for selected effect */
+}
+
+/* Highlight the selected border with a ring */
+input[type="radio"]:checked + .border-item img {
+    box-shadow: 0 0 0 4px #3490dc; /* Blue ring around selected border */
+}
+
+/* Hover effect for borders to give feedback */
+.border-item img:hover {
+    box-shadow: 0 0 0 2px #6c757d; /* Grey ring on hover to show it’s clickable */
+}
+
+
+.border-list {
+    display: flex;
+    flex-wrap: wrap; /* This allows the items to wrap on smaller screens */
+    gap: 20px; /* Adds space between each item */
+}
