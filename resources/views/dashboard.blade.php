@@ -859,6 +859,7 @@
 </script>
 
 <style>
+    
     .card {
     min-width: 250px; /* Ensures a minimum width for each widget */
     flex: 1; /* Makes widgets flexible in width */
@@ -1237,7 +1238,7 @@ document.addEventListener("DOMContentLoaded", function () {
             labels: ['Low', 'Medium', 'High'],  // Priority labels
             datasets: [{
                 data: priorityCounts,
-                backgroundColor: ['#ff6b6b', '#feca57', '#1dd1a1'],
+                backgroundColor: ['#1dd1a1', '#feca57', '#ff6b6b'],
                 borderColor: "#ffffff",
                 borderWidth: 5,
             }]

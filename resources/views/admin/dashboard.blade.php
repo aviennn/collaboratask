@@ -349,7 +349,7 @@
 
 <script>
     
- document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
     const taskData = @json($taskData); // Assuming this is server-side injected JSON object
 
     // Chart colors
@@ -461,47 +461,40 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // Set default chart type to 'doughnut'
+    // Initial Chart Setup (Donut by default)
     let priorityChartType = 'doughnut'; // Default chart type
     const priorityCtx2d = priorityCtx.getContext('2d');
     let priorityChart = new Chart(priorityCtx2d, {
         type: priorityChartType,
         data: {
-            labels: ['Low', 'Medium', 'High'],  // Priority labels in a fixed order
+            labels: ['Low', 'Medium', 'High'],  // Priority labels
             datasets: [{
-                label: 'Priority Count',
-                data: priorityCounts,  // Corrected data order
-                backgroundColor: ['#ff6b6b', '#feca57', '#1dd1a1'],  // Updated colors for Low, Medium, High
-                fill: priorityChartType === 'line', // Only fill for line chart
-                tension: 0.4, // Smooth curve for the line
-                pointBackgroundColor: '#007bff', // Dot color for line chart
-                pointRadius: 5, // Dot size for visibility
+                data: priorityCounts,
+                backgroundColor: ['#1dd1a1', '#feca57', '#ff6b6b'],
+                borderColor: "#ffffff",
+                borderWidth: 5,
             }]
         },
         options: {
-            responsive: true,
             maintainAspectRatio: false,
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                displayColors: false,
+            },
+            legend: { display: false },  // Hide the legend similar to the left chart
             scales: priorityChartType === 'bar' || priorityChartType === 'line' ? {
-                x: {
-                    grid: {
-                        display: false, // Match with status bar style
-                    },
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 10 // Adjust as needed
-                    },
-                    grid: {
-                        display: true, // Match with status bar style
-                    },
-                }
-            } : {},
-            plugins: {
-                legend: {
-                    display: true // Display legend for clarity
-                }
-            }
+                xAxes: [{
+                    gridLines: { display: false },
+                    ticks: { beginAtZero: true }
+                }],
+                yAxes: [{
+                    gridLines: { display: true },
+                    ticks: { beginAtZero: true }
+                }]
+            } : {}
         }
     });
 
@@ -514,52 +507,40 @@ document.addEventListener("DOMContentLoaded", function () {
         priorityChart = new Chart(priorityCtx2d, {
             type: selectedChartType,
             data: {
-                labels: ['Low', 'Medium', 'High'],  // Priority labels in a fixed order
+                labels: ['Low', 'Medium', 'High'],
                 datasets: [{
-                    label: 'Priority Count',
-                    data: priorityCounts,  // Corrected data order
-                    backgroundColor: selectedChartType === 'doughnut' || selectedChartType === 'bar' ? 
-                                     ['#ff6b6b', '#feca57', '#1dd1a1'] : 'rgba(0, 123, 255, 0.2)',
-                    borderColor: selectedChartType === 'line' ? 
-                                "#007bff" : ['#ff6b6b', '#feca57', '#1dd1a1'],  // Line or bar colors
+                    data: priorityCounts,
+                    backgroundColor: selectedChartType === 'line'
+                        ? "rgba(0, 123, 255, 0.2)"
+                        : ['#ff6b6b', '#feca57', '#1dd1a1'],
+                    borderColor: selectedChartType === 'line' ? "#007bff" : "#ffffff",
                     borderWidth: selectedChartType === 'line' ? 2 : 1,
                     fill: selectedChartType === 'line', // Only fill for line chart
-                    tension: selectedChartType === 'line' ? 0.4 : 0, // Smooth curve for line chart
-                    pointBackgroundColor: '#007bff', // Dot color for line chart
-                    pointRadius: selectedChartType === 'line' ? 5 : 0, // Dot size for line chart
-                }]
+                }],
             },
             options: {
-                responsive: true,
                 maintainAspectRatio: false,
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    displayColors: false,
+                },
+                legend: { display: false },  // Ensure legend is hidden across all chart types
                 scales: selectedChartType === 'bar' || selectedChartType === 'line' ? {
-                    x: {
-                        grid: {
-                            display: false, // Hide x-axis grid lines to match status bar style
-                        },
-                    },
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 10 // Adjust as needed
-                        },
-                        grid: {
-                            display: true, // Show y-axis grid lines to match status bar style
-                        },
-                    }
-                } : {},
-                plugins: {
-                    legend: {
-                        display: true // Display legend for clarity
-                    }
-                }
+                    xAxes: [{
+                        gridLines: { display: false },
+                        ticks: { beginAtZero: true }
+                    }],
+                    yAxes: [{
+                        gridLines: { display: true },
+                        ticks: { beginAtZero: true }
+                    }]
+                } : {}
             }
         });
     });
-
-
-
-
 
 
 

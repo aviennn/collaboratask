@@ -25,26 +25,36 @@ class NewMessageNotification extends Notification implements ShouldQueue
     }
 
     public function toBroadcast($notifiable)
-    {
-        return new BroadcastMessage([
-            'message_id' => $this->message->id,
-            'message_body' => $this->message->message,
-            'sender_name' => $this->message->user->name,
-            'team_id' => $this->message->team_id,
-            'team_name' => $this->message->team->name,
-        ]);
-    }
+{
+    // Determine the avatar path or fallback to avatar5.png
+    $avatarPath = $this->message->user->profile_photo_path 
+        ? asset('storage/' . $this->message->user->profile_photo_path) 
+        : asset('dist/img/avatar5.png');
 
-    public function toArray($notifiable)
-    {
-        // Data stored in the `data` column of the `notifications` table
-        return [
-            'message_id' => $this->message->id,
-            'message_body' => $this->message->message,
-            'sender_name' => $this->message->user->name,
-            'team_id' => $this->message->team_id,
-            'team_name' => $this->message->team->name,
-            'sender_avatar' => $this->message->user->avatar ?? asset('default-avatar.png'), // Include avatar URL   
-        ];
-    }
+    return new BroadcastMessage([
+        'message_id' => $this->message->id,
+        'message_body' => $this->message->message,
+        'sender_name' => $this->message->user->name,
+        'team_id' => $this->message->team_id,
+        'team_name' => $this->message->team->name,
+        'sender_avatar' => $avatarPath, // Add avatar path for broadcast notifications
+    ]);
+}
+
+public function toArray($notifiable)
+{
+    $avatarPath = $this->message->user->profile_photo_path 
+        ? asset('storage/' . $this->message->user->profile_photo_path)
+        : asset('dist/img/avatar5.png');
+
+    return [
+        'message_id' => $this->message->id,
+        'message_body' => $this->message->message,
+        'sender_name' => $this->message->user->name,
+        'team_id' => $this->message->team_id,
+        'team_name' => $this->message->team->name,
+        'sender_avatar' => $avatarPath,
+    ];
+}
+
 }

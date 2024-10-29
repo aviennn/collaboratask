@@ -28,9 +28,8 @@ class TeamController extends Controller
 
     public function create()
     {
-        $users = User::where('id', '!=', Auth::id())->get();
-
-        return view('teams.create', compact('users'));
+        $users = User::where('usertype', '!=', 'admin')->where('id', '!=', Auth::id())->get(); // Exclude admin and creator
+    return view('teams.create', compact('users'));
     }
 
     public function store(Request $request)
@@ -62,24 +61,20 @@ class TeamController extends Controller
 
     // Loop through selected members and send an invitation
     foreach ($request->members as $userId) {
-        $user = User::find($userId);
-
+        $user = User::where('usertype', '!=', 'admin')->find($userId); // Exclude admin from invitations
         if ($user) {
-            // Create an invitation entry
-            $invitation = Invitation::create([
+            Invitation::create([
                 'team_id' => $team->id,
                 'inviter_id' => Auth::id(),
                 'invitee_id' => $user->id,
                 'email' => $user->email,
                 'status' => 'pending',
             ]);
-
             try {
                 $user->notify(new \App\Notifications\TeamInvitation($team, Auth::user()));
             } catch (\Exception $e) {
                 \Log::error("Failed to send invitation email: " . $e->getMessage());
             }
-            
         }
     }
 
@@ -99,6 +94,7 @@ public function show(Request $request, $id)
 {
     // Fetch the team along with its members and creator
     $team = Team::with(['members', 'creator'])->findOrFail($id);
+    $query = $team->tasks();
 
     $startDate = $request->input('start_date');
     $endDate = $request->input('end_date');
@@ -190,7 +186,7 @@ public function show(Request $request, $id)
 
 
 
-    public function edit($id)
+public function edit($id)
 {
     $team = Team::with('members')->findOrFail($id);
 
@@ -199,8 +195,8 @@ public function show(Request $request, $id)
         return redirect()->route('user.teams.index')->with('error', 'You do not have permission to edit this team.');
     }
 
-    $users = User::where('id', '!=', Auth::id())->get();
-
+    // Exclude admin and creator from the list
+    $users = User::where('usertype', '!=', 'admin')->where('id', '!=', Auth::id())->get();
     return view('teams.edit', compact('team', 'users'));
 }
 

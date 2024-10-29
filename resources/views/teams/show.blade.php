@@ -197,118 +197,132 @@ canvas {
                     <!-- Dashboard Tab -->
                     <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
                     <!-- Team Info and Members -->
-                    <div class="row">
-                        <div class="col-md-4 mb-4">
-                            <div class="card shadow">
-                                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                    <h6 class="m-0 font-weight-bold text-primary">Team Info</h6>
-                                </div>
-                                <div class="card-body">
-                                    <p><strong>Name:</strong> {{ $team->name }}</p>
-                                    <p><strong>Description:</strong> {{ $team->description }}</p>
-                                    <p><strong>Creator:</strong> {{ $team->creator->name }}</p>
-                                </div>
+<div class="row">
+    <!-- Team Info Section -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Team Info</h6>
+            </div>
+            <div class="card-body text-center">
+                <!-- Display Team Image if it exists -->
+                @if ($team->image)
+                    <div class="d-flex justify-content-center mb-3">
+                        <img src="{{ asset('storage/' . $team->image) }}" 
+                             alt="{{ $team->name }}" 
+                             class="rounded-circle img-thumbnail" 
+                             style="max-width: 120px; height: 120px;">
+                    </div>
+                @endif
+
+                <!-- Team Details -->
+                <p><strong>Name:</strong> {{ $team->name }}</p>
+                <p><strong>Description:</strong> {{ $team->description }}</p>
+                <p><strong>Creator:</strong> {{ $team->creator->name }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Members Section -->
+    <div class="col-md-8 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Members</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-group mb-4">
+                    @foreach ($team->members as $member)
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ $member->name }}</span>
+                            <!-- Add View Button -->
+                            <a href="{{ route('user.analytics', ['team_id' => $team->id, 'user_id' => $member->id]) }}" class="btn btn-info btn-sm">
+                                View User
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+
+                @if(Auth::user()->usertype == 'admin' || Auth::id() == $team->creator_id)
+                    <!-- Assign Task Button -->
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#assignTaskModal">
+                        Assign Task
+                    </button>
+                @endif
+
+                <!-- Task Assignment Modal -->
+                <div class="modal fade" id="assignTaskModal" tabindex="-1" role="dialog" aria-labelledby="assignTaskModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="assignTaskModalLabel">Assign Task</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
                             </div>
-                        </div>
-
-                        <div class="col-md-8 mb-4">
-                            <div class="card shadow">
-                                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                    <h6 class="m-0 font-weight-bold text-primary">Members</h6>
-                                </div>
-                                <div class="card-body">
-                                <ul class="list-group mb-4">
-                @foreach ($team->members as $member)
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>{{ $member->name }}</span>
-                        <!-- Add View Button -->
-                        <a href="{{ route('user.analytics', ['team_id' => $team->id, 'user_id' => $member->id]) }}" class="btn btn-info btn-sm">
-                            View User
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-
-                                    @if(Auth::user()->usertype == 'admin' || Auth::id() == $team->creator_id)
-                                        <!-- Assign Task Button -->
-                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#assignTaskModal">
-                                            Assign Task
-                                        </button>
-                                    @endif
-
-                                    <!-- Task Assignment Modal -->
-                                    <div class="modal fade" id="assignTaskModal" tabindex="-1" role="dialog" aria-labelledby="assignTaskModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="assignTaskModalLabel">Assign Task</h5>
-                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form method="POST" action="{{ route('team.tasks.store', $team->id) }}" enctype="multipart/form-data">
-                                                        @csrf
-                                                        <div class="form-group">
-                                                            <label for="name">Task Name</label>
-                                                            <input type="text" name="name" id="name" class="form-control" required>
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label for="priority">Priority</label>
-                                                            <select name="priority" id="priority" class="form-control" required>
-                                                                <option value="low">Low</option>
-                                                                <option value="medium">Medium</option>
-                                                                <option value="high">High</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label for="due_date">Due Date</label>
-                                                            <input type="date" name="due_date" id="due_date" class="form-control" required>
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label for="description">Description</label>
-                                                            <textarea name="description" id="description" class="form-control"></textarea>
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label for="attachments">Attachments</label>
-                                                            <input type="file" name="attachments[]" id="attachments" class="form-control" multiple>
-                                                        </div>
-                                                        <div class="form-group">
-                                                        <label for="checklists">Checklist Items</label>
-                                                            <div id="checklist-items">
-                                                                <div class="input-group mb-2 checklist-group">
-                                                                    <input type="text" name="checklists[]" class="form-control checklist-input" placeholder="Checklist item">
-                                                                    <div class="input-group-append">
-                                                                        <button class="btn btn-danger remove-checklist-item" type="button">Remove</button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <!-- + Button for adding checklist item -->
-                                                            <button id="add-checklist-item" class="btn btn-success mt-2" type="button">
-                                                                <i class="fas fa-plus"></i> <!-- Font Awesome icon for "+" -->
-                                                            </button>
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label for="assignee">Assign to Member</label>
-                                                            <select name="assignee" id="assignee" class="form-control" required>
-                                                                @foreach ($team->members as $member)
-                                                                    <option value="{{ $member->id }}">{{ $member->name }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="form-group mt-3">
-                                                            <button type="submit" class="btn btn-primary">Assign Task</button>
-                                                        </div>
-                                                    </form>
+                            <div class="modal-body">
+                                <form method="POST" action="{{ route('team.tasks.store', $team->id) }}" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="form-group">
+                                        <label for="name">Task Name</label>
+                                        <input type="text" name="name" id="name" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="priority">Priority</label>
+                                        <select name="priority" id="priority" class="form-control" required>
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="due_date">Due Date</label>
+                                        <input type="date" name="due_date" id="due_date" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="description">Description</label>
+                                        <textarea name="description" id="description" class="form-control"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="attachments">Attachments</label>
+                                        <input type="file" name="attachments[]" id="attachments" class="form-control" multiple>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="checklists">Checklist Items</label>
+                                        <div id="checklist-items">
+                                            <div class="input-group mb-2 checklist-group">
+                                                <input type="text" name="checklists[]" class="form-control checklist-input" placeholder="Checklist item">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-danger remove-checklist-item" type="button">Remove</button>
                                                 </div>
                                             </div>
                                         </div>
+                                        <!-- + Button for adding checklist item -->
+                                        <button id="add-checklist-item" class="btn btn-success mt-2" type="button">
+                                            <i class="fas fa-plus"></i> <!-- Font Awesome icon for "+" -->
+                                        </button>
                                     </div>
-                                    <!-- End of Task Assignment Modal -->
-                                </div>
+                                    <div class="form-group">
+                                        <label for="assignee">Assign to Member</label>
+                                        <select name="assignee" id="assignee" class="form-control" required>
+                                            @foreach ($team->members as $member)
+                                                <option value="{{ $member->id }}">{{ $member->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group mt-3">
+                                        <button type="submit" class="btn btn-primary">Assign Task</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
+                </div>
+                <!-- End of Task Assignment Modal -->
+            </div>
+        </div>
+    </div>
+</div>
+
 
                     <!-- Assigned Tasks Section -->
 <div class="col-md-12 mt-4">
@@ -1042,25 +1056,25 @@ canvas {
 <!-- End of All Tasks Section -->
 
 
-
-                <!-- Chat Tab -->
-                <div class="tab-pane fade" id="chat" role="tabpanel">
-    <div id="chat-messages" style="height: 340px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px;">
+<!-- Chat Tab -->
+<div class="tab-pane fade" id="chat" role="tabpanel">
+    <div id="chat-messages" class="chat-container">
         <!-- Chat messages will be dynamically loaded here -->
     </div>
 
-    <form id="chat-form" class="mt-3" enctype="multipart/form-data">
-    @csrf
-    <div class="input-group">
-        <input type="text" id="message-input" class="form-control" placeholder="Type a message...">
-        <div class="input-group-append">
-            <!-- Add file input for attachments -->
-            <input type="file" id="file-input" class="form-control" name="file" accept=".jpg,.png,.pdf,.doc,.docx">
-            <button class="btn btn-primary" type="submit">Send</button>
+    <form id="chat-form" class="mt-3 chat-form" enctype="multipart/form-data">
+        @csrf
+        <div class="input-group">
+            <input type="text" id="message-input" class="form-control" placeholder="Type a message...">
+            <div class="input-group-append">
+                <!-- Add file input for attachments -->
+                <input type="file" id="file-input" class="form-control" name="file" accept=".jpg,.png,.pdf,.doc,.docx">
+                <button class="btn btn-primary" type="submit">Send</button>
+            </div>
         </div>
-    </div>
-</form>
+    </form>
 </div>
+
 
 
                 <!-- Leaderboard Tab -->
@@ -1267,9 +1281,141 @@ canvas {
         
     @endif
     <!-- End of Add Reward Modal -->
-
+<!-- Lightbox Structure -->
+<div id="lightbox" class="lightbox">
+    <img id="lightboxImage" class="lightbox-content">
+</div>
 </x-app-layout>
 <style>
+/* Default (Light mode) Chat container styling */
+#chat-messages {
+    height: 340px;
+    overflow-y: scroll;
+    border: 1px solid #ccc; /* Light border for light mode */
+    padding: 10px;
+    background-color: #f9f9f9; /* Light background for chat */
+    color: #333; /* Darker text for contrast */
+    border-radius: 10px; /* Consistent rounded corners */
+}
+
+/* Light mode chat message bubble styling */
+#chat-messages .media-body {
+    background-color: #ffffff; /* Light background for chat messages */
+    color: #333; /* Dark text */
+    border-radius: 10px;
+    padding: 10px;
+    display: inline-block;
+    max-width: 70%;
+    margin-bottom: 10px;
+    word-wrap: break-word;
+}
+
+/* Light mode input area styling */
+#chat-form .form-control {
+    background-color: #ffffff; /* Lighter input background for light mode */
+    color: #333; /* Dark text for input */
+    border: 1px solid #ccc; /* Light border for inputs */
+}
+
+/* Light mode button styling */
+#chat-form .btn-primary {
+    background-color: #007bff; /* Standard blue for buttons */
+    border-color: #007bff;
+}
+
+#chat-form .btn-primary:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+}
+
+/* Light mode message timestamp styling */
+#chat-messages .text-muted, 
+#chat-messages .text-light {
+    color: #6c757d; /* Gray for timestamps */
+}
+
+/* Dark mode styles (Use with a dark-mode class) */
+body.dark-mode #chat-messages {
+    border: 1px solid #444; /* Darker border for dark mode */
+    background-color: #2c2c2c; /* Dark background for chat */
+    color: #e0e0e0; /* Light gray text for contrast */
+    border-radius: 10px; /* Consistent rounded corners */
+}
+
+body.dark-mode #chat-messages .media-body {
+    background-color: #3a3a3a; /* Dark background for chat messages */
+    color: #f1f1f1; /* Light text */
+}
+
+body.dark-mode #chat-form .form-control {
+    background-color: #333; /* Darker input background for dark mode */
+    color: #f1f1f1; /* Light text for input */
+    border: 1px solid #555; /* Dark border for inputs */
+}
+
+body.dark-mode #chat-form .btn-primary {
+    background-color: #1a73e8; /* Slightly brighter blue for visibility */
+    border-color: #1a73e8;
+}
+
+body.dark-mode #chat-form .btn-primary:hover {
+    background-color: #135aba; /* Darker shade on hover */
+}
+
+body.dark-mode #chat-messages .text-muted, 
+body.dark-mode #chat-messages .text-light {
+    color: #bdbdbd; /* Light gray for timestamps */
+}
+
+/* Ensure Links are Visible in Both Modes */
+/* Light Mode */
+#chat-messages a {
+    color: #007bff; /* Visible blue for links in light mode */
+    text-decoration: none;
+}
+
+#chat-messages a:hover {
+    color: #0056b3; /* Darker blue on hover */
+    text-decoration: underline;
+}
+
+/* Dark Mode */
+body.dark-mode #chat-messages a {
+    color: #80cfff; /* Lighter blue for links in dark mode */
+}
+
+body.dark-mode #chat-messages a:hover {
+    color: #4da6ff; /* Brighter blue on hover in dark mode */
+    text-decoration: underline;
+}
+
+    /* Lightbox overlay */
+.lightbox {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 9999; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.9); /* Black background with opacity */
+}
+
+/* Lightbox image */
+.lightbox-content {
+    display: block;
+    margin: auto;
+    max-width: 90%; /* Max width of the image */
+    max-height: 90%; /* Max height of the image */
+    animation: fadeIn 0.3s ease-in-out; /* Fade-in animation */
+}
+
+/* Fade-in effect */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 /* Responsive Table: Ensure horizontal scrolling on mobile */
 .table-responsive {
     overflow-x: auto;
@@ -1407,6 +1553,28 @@ canvas {
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+    // Get the lightbox elements
+    var lightbox = document.getElementById('lightbox');
+    var lightboxImage = document.getElementById('lightboxImage');
+
+    // Event listener for clicking an image with class 'preview-image'
+    document.body.addEventListener('click', function (e) {
+        if (e.target && e.target.classList.contains('preview-image')) {
+            // Show the lightbox
+            lightbox.style.display = 'block';
+            // Set the lightbox image source
+            lightboxImage.src = e.target.src;
+        }
+    });
+
+    // Hide the lightbox when clicking anywhere on it
+    lightbox.addEventListener('click', function () {
+        lightbox.style.display = 'none';
+    });
+});
+
     $(document).ready(function() {
         // Automatically close the alert after 5 seconds
         setTimeout(function() {
@@ -1477,12 +1645,14 @@ canvas {
     var encodedFilename = encodeURIComponent(filename); // URL encode the filename
 
     if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+
         fileElement = `
-            <div class="file-preview">
-                <img src="${message.file_url}" alt="Image Preview" class="img-thumbnail" style="max-width: 150px;" />
-                <a href="/download/${encodedFilename}" class="d-block mt-2">Download ${filename}</a>
-            </div>
-        `;
+    <div class="file-preview" style="text-align: center;">
+        <img src="${message.file_url}" alt="Image Preview" class="img-thumbnail preview-image" style="max-width: 150px; height: auto; cursor: pointer;" />
+        <a href="/download/${encodedFilename}" class="d-block mt-2">Download ${filename}</a>
+    </div>
+`;
+
     } else if (fileExtension === 'pdf') {
         fileElement = `
             <a href="/download/${encodedFilename}" class="d-block mt-2">
@@ -1714,7 +1884,7 @@ fill: false
             datasets: [{
                 label: 'Task Priority',
                 data: [data.lowPriority, data.mediumPriority, data.highPriority],
-                backgroundColor: ['#ff6b6b', '#feca57', '#1dd1a1'],  // Keep dot colors
+                backgroundColor: ['#1dd1a1', '#feca57', '#ff6b6b'],  // Keep dot colors
 
 borderColor: '#000000',  // Set line color to black
 

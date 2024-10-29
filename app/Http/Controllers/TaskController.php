@@ -398,7 +398,9 @@ public function storeFromCalendar(Request $request)
         $teamLeader = $task->team->creator;
         $teamLeader->notify(new TaskProgressUpdated($task));  // Send the notification
     }
-    return redirect()->route('user.tasks.index')->with('success', 'Task updated successfully.');
+    $redirectRoute = $task->team ? route('user.teams.show', $task->team_id) : route('user.tasks.index');
+
+    return redirect($redirectRoute)->with('success', 'Task updated successfully.');
 }
 
 

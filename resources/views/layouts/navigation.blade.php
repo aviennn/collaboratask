@@ -35,72 +35,81 @@
             </div>
         </li>
 
+
+        <script>
+            var authUserAvatar = @json(Auth::user()->profile_photo_path 
+    ? asset('storage/' . Auth::user()->profile_photo_path) 
+    : asset('dist/img/avatar5.png'));
+        </script>
+
 <!-- Chat Notifications Dropdown -->
 @php
 $messageNotifications = auth()->user()->notifications()
     ->where('type', 'App\Notifications\NewMessageNotification')
     ->get();
-
 @endphp
 
+<!-- Chat Notifications Dropdown -->
 <li class="nav-item dropdown">
-            <a class="nav-link" data-toggle="dropdown" href="#">
-                <i class="fas fa-comments"></i>
-                @php
-                    $messageNotificationsCount = $unreadNotifications->where('type', 'App\Notifications\NewMessageNotification')->count();
-                @endphp
-                @if($messageNotificationsCount > 0)
-                    <span class="badge badge-danger navbar-badge chat-notification-count">{{ $messageNotificationsCount }}</span>
-                @endif
-            </a>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right custom-dropdown">
-                <span class="dropdown-item dropdown-header">{{ $messageNotifications->count() }} New Messages</span>
-                <div class="notification-list custom-scroll" style="max-height: 240px; overflow-y: auto;">
-                    @foreach($messageNotifications as $notification)
-                        <div class="dropdown-divider"></div>
-                        <div class="d-flex align-items-center justify-content-between px-2">
-                            <a href="{{ route('notifications.markAsRead', $notification->id) }}?redirect_to=/teams/{{ $notification->data['team_id'] }}/messages/{{ $notification->data['message_id'] }}" class="dropdown-item w-100">
-                                <div class="media-body d-flex">
-                                    <img src="{{ $notification->data['sender_avatar'] }}" alt="User Avatar" class="img-size-50 mr-3 rounded-circle">
-                                    <div class="media-body">
-                                        <p class="mb-0 text-sm font-weight-bold">{{ $notification->data['team_name'] }}</p>
-                                        <p class="mb-0 text-sm {{ is_null($notification->read_at) ? 'font-weight-bold' : '' }}">
-                                            {{ $notification->data['sender_name'] }}: {{ $notification->data['message_body'] }}
-                                        </p>
-                                        <p class="text-muted text-sm mb-0">
-                                            <i class="fas fa-clock mr-1"></i> {{ $notification->created_at->diffForHumans() }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </a>
-                            <form method="POST" action="{{ route('notifications.delete', $notification->id) }}" style="display: inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger ml-2">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+    <a class="nav-link" data-toggle="dropdown" href="#">
+        <i class="fas fa-comments"></i>
+        @php
+            $messageNotificationsCount = $unreadNotifications->where('type', 'App\Notifications\NewMessageNotification')->count();
+        @endphp
+        @if($messageNotificationsCount > 0)
+            <span class="badge badge-danger navbar-badge chat-notification-count">{{ $messageNotificationsCount }}</span>
+        @endif
+    </a>
+    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right custom-dropdown">
+        <span class="dropdown-item dropdown-header">{{ $messageNotifications->count() }} New Messages</span>
+        <div class="notification-list custom-scroll" style="max-height: 240px; overflow-y: auto;">
+            @foreach($messageNotifications as $notification)
+                <div class="dropdown-divider"></div>
+                <div class="d-flex align-items-center justify-content-between px-2">
+                    <a href="{{ route('notifications.markAsRead', $notification->id) }}?redirect_to=/teams/{{ $notification->data['team_id'] }}/messages/{{ $notification->data['message_id'] }}" class="dropdown-item w-100 d-flex align-items-center">
+                    <img 
+    src="{{ $notification->data['sender_avatar'] ?? asset('dist/img/avatar5.png') }}" 
+    alt="User Avatar" 
+    class="rounded-circle mr-3" 
+    style="width: 50px; height: 50px; object-fit: cover; align-self: center;"
+    onerror="this.src='{{ asset('dist/img/avatar5.png') }}';" 
+>
+
+                        <div class="media-body">
+                            <p class="mb-0 text-sm font-weight-bold">{{ $notification->data['team_name'] }}</p>
+                            <p class="mb-0 text-sm {{ is_null($notification->read_at) ? 'font-weight-bold' : '' }}">
+                                {{ $notification->data['sender_name'] }}: {{ $notification->data['message_body'] }}
+                            </p>
+                            <p class="text-muted text-sm mb-0">
+                                <i class="fas fa-clock mr-1"></i> {{ $notification->created_at->diffForHumans() }}
+                            </p>
                         </div>
-                    @endforeach
-                </div>
-                                <!-- Footer Actions for Chat Notifications -->
-                <div class="sticky-footer p-2 text-center d-flex flex-column justify-content-center align-items-center">
-                    <a href="#" id="markAllChatAsRead" class="btn btn-primary btn-sm mb-2">
-                        <i class="fas fa-check-circle mr-2"></i> Mark All as Read
                     </a>
-                    <form method="POST" action="{{ route('notifications.deleteAllChat') }}">
+                    <form method="POST" action="{{ route('notifications.delete', $notification->id) }}" style="display: inline;">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm">
-                            <i class="fas fa-trash-alt mr-2"></i> Delete All Notifications
+                        <button type="submit" class="btn btn-sm btn-danger ml-2">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </form>
                 </div>
-
-            </div>
-        </li>
-
-
+            @endforeach
+        </div>
+        <!-- Footer Actions for Chat Notifications -->
+        <div class="sticky-footer p-2 text-center d-flex flex-column justify-content-center align-items-center">
+            <a href="#" id="markAllChatAsRead" class="btn btn-primary btn-sm mb-2">
+                <i class="fas fa-check-circle mr-2"></i> Mark All as Read
+            </a>
+            <form method="POST" action="{{ route('notifications.deleteAllChat') }}">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger btn-sm">
+                    <i class="fas fa-trash-alt mr-2"></i> Delete All Notifications
+                </button>
+            </form>
+        </div>
+    </div>
+</li>
 
 @php
     // Fetch unread notifications for the authenticated user
@@ -266,6 +275,8 @@ $messageNotifications = auth()->user()->notifications()
 <!-- Custom CSS -->
 <!-- Custom CSS -->
 <style>
+   
+
     /* Button Styling */
     .btn {
         padding: 0.4rem 1rem;
@@ -351,6 +362,7 @@ $messageNotifications = auth()->user()->notifications()
     }
 </style>
 <script>
+    
     function adjustDropdownTextColor() {
     const dropdowns = document.querySelectorAll('.custom-dropdown');
 

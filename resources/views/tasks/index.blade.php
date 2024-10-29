@@ -407,6 +407,73 @@
 </x-app-layout>
 
 <style>
+/* Target the DataTable length label for the "Show entries" in light mode */
+#dataTableUnified_wrapper .dataTables_length label {
+    color: #333; /* Darker text color for light mode */
+    font-weight: bold; /* Make the text stand out */
+    font-size: 14px; /* Adjust the font size for better visibility */
+    cursor: default; /* Use default cursor for labels */
+}
+
+/* For dark mode, adjust the text to be lighter */
+body.dark-mode #dataTableUnified_wrapper .dataTables_length label {
+    color: #e0e0e0; /* Light text color for visibility in dark mode */
+    font-weight: bold;
+    font-size: 14px;
+    cursor: default; /* Use default cursor for labels */
+}
+
+/* Styling for DataTables info section */
+#dataTableUnified_wrapper .dataTables_info {
+    color: #333; /* Darker color for light mode */
+    font-size: 14px;
+    cursor: default; /* Use default cursor for info */
+}
+
+/* Dark mode adjustment for info section */
+body.dark-mode #dataTableUnified_wrapper .dataTables_info {
+    color: #e0e0e0; /* Light color for visibility in dark mode */
+    cursor: default; /* Use default cursor for info */
+}
+
+/* Styling for DataTables search label */
+#dataTableUnified_wrapper .dataTables_filter label {
+    color: #333; /* Darker color for light mode */
+    font-size: 14px;
+    font-weight: bold; /* Emphasize the label */
+    cursor: default; /* Use default cursor for labels */
+}
+
+/* Dark mode adjustment for search label */
+body.dark-mode #dataTableUnified_wrapper .dataTables_filter label {
+    color: #e0e0e0; /* Lighter color for visibility in dark mode */
+    font-weight: bold;
+    cursor: default; /* Use default cursor for labels */
+}
+
+/* Light mode styling for 'Previous' and 'Next' text */
+#dataTableUnified_wrapper .pagination .paginate_button a.page-link {
+    color: #333; /* Dark text color for light mode */
+    font-weight: bold; /* Make the text stand out */
+    cursor: pointer; /* Ensure the cursor changes to pointer */
+}
+
+/* Hover state for 'Previous' and 'Next' text in light mode */
+#dataTableUnified_wrapper .pagination .paginate_button a.page-link:hover {
+    color: #000; /* Darker color on hover for visibility */
+}
+
+/* Dark mode styling for 'Previous' and 'Next' text */
+body.dark-mode #dataTableUnified_wrapper .pagination .paginate_button a.page-link {
+    color: #f1f1f1; /* Light text color for dark mode */
+    font-weight: bold;
+    cursor: pointer; /* Ensure the cursor changes to pointer */
+}
+
+/* Hover state for 'Previous' and 'Next' text in dark mode */
+body.dark-mode #dataTableUnified_wrapper .pagination .paginate_button a.page-link:hover {
+    color: #ffffff; /* Pure white text on hover for maximum visibility */
+}
     /* Add this to your existing CSS */
 .task-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;

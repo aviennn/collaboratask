@@ -82,8 +82,10 @@
                                     <br>
                                     
                                 </div>
-                                <div class="form-group">
-                                    <button type="submit" class="btn btn-primary">Create Team</button>
+                                <div class="form-group mt-3 d-flex justify-content-between">
+                                <a href="{{ url()->previous() }}" class="btn btn-danger">Go Back</a>
+
+                                <button type="submit" class="btn btn-primary">Create Team</button>
                                 </div>
                             </form>
                         </div>

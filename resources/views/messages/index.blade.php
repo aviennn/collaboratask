@@ -43,6 +43,8 @@
 
 @section('scripts')
 <script>
+     // Pass the authenticated user's profile photo URL to JavaScript
+     var authUserAvatar = @json(Auth::user()->profile_photo_path ? asset('storage/' . Auth::user()->profile_photo_path) : asset('dist/img/avatar5.png'));
     $(document).ready(function () {
         console.log('Document ready!');
 
@@ -83,97 +85,101 @@
             });
         }
 
-        // Function to append messages to chat dynamically
-        function appendMessageToChat(teamId, messageData, isSender) {
-            var chatMessagesList = $('#chat-messages-list-' + teamId);
+       // Function to append messages to chat dynamically
+       function appendMessageToChat(teamId, messageData, isSender) {
+    var chatMessagesList = $('#chat-messages-list-' + teamId);
 
-            // Check if the chat list exists
-            if (chatMessagesList.length === 0) {
-                console.error('Chat message list for team ID ' + teamId + ' not found.');
-                return;
-            }
+    if (chatMessagesList.length === 0) {
+        console.error('Chat message list for team ID ' + teamId + ' not found.');
+        return;
+    }
 
-            // Format the date and time correctly
-            var timestamp = new Date();
-            if (messageData.created_at) {
-                timestamp = new Date(messageData.created_at);
-            }
-            
-            var formattedDateTime = timestamp.toLocaleString('en-US', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12: true
-            });
+    var timestamp = new Date();
+    if (messageData.created_at) {
+        timestamp = new Date(messageData.created_at);
+    }
+    
+    var formattedDateTime = timestamp.toLocaleString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+    });
 
-            var avatarUrl = messageData.sender_avatar ? messageData.sender_avatar : '/images/default-avatar.png';
-            
-            // Format the message bubble differently for sender and receiver
-            var messageHtml = `
-                <li class="list-group-item d-flex ${isSender ? 'flex-row-reverse' : ''} align-items-center mb-2">
-                    <img src="${avatarUrl}" class="img-circle elevation-2" style="width: 40px; height: 40px; margin-${isSender ? 'left' : 'right'}: 10px;">
-                    <div class="direct-chat-msg ${isSender ? 'right' : ''}">
-                        <div class="direct-chat-text ${isSender ? 'bg-primary text-white' : 'bg-light'} p-3" style="border-radius: 15px;">
-                            <strong>${isSender ? 'You' : messageData.sender_name}:</strong><br>
-                            ${messageData.message_body}
-                            <br><small class="text-muted">${formattedDateTime}</small>
+    // Use the authenticated user's avatar if the message is from the sender
+    var avatarUrl = isSender 
+        ? authUserAvatar 
+        : (messageData.sender_avatar 
+            ? `/storage/${messageData.sender_avatar}` 
+            : '{{ asset("dist/img/avatar5.png") }}');
+
+    console.log('Avatar URL:', avatarUrl);  // Debugging line to verify URL
+
+    var messageHtml = `
+        <li class="list-group-item d-flex ${isSender ? 'flex-row-reverse' : ''} align-items-center mb-2">
+            <img src="${avatarUrl}" class="img-circle elevation-2" style="width: 40px; height: 40px; margin-${isSender ? 'left' : 'right'}: 10px;">
+            <div class="direct-chat-msg ${isSender ? 'right' : ''}">
+                <div class="direct-chat-text ${isSender ? 'bg-primary text-white' : 'bg-light'} p-3" style="border-radius: 15px;">
+                    <strong>${isSender ? 'You' : messageData.sender_name}:</strong><br>
+                    ${messageData.message_body}
+                    <br><small class="text-muted">${formattedDateTime}</small>
+                </div>
+            </div>
+        </li>
+    `;
+
+    chatMessagesList.append(messageHtml);
+    scrollToBottom();
+}
+
+
+
+// Load team messages dynamically
+$(document).on('click', '.team-link', function(e) {
+    e.preventDefault(); // Prevent default link behavior
+    var teamId = $(this).data('team-id');
+    $.get('/teams/' + teamId + '/messages', function(data) {
+        var chatContainer = $('#chat-container');
+        chatContainer.html(`
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h4 class="card-title text-center">Chat for Team ${teamId}</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group chat-messages-list" id="chat-messages-list-${teamId}" style="height: 400px; overflow-y: scroll;">
+                    </ul>
+                    <form id="chat-form">
+                        @csrf
+                        <div class="input-group">
+                            <input type="text" id="message-input" name="message" class="form-control" placeholder="Type a message...">
+                            <span class="input-group-append">
+                                <button class="btn btn-primary" type="submit">Send</button>
+                            </span>
                         </div>
-                    </div>
-                </li>
-            `;
+                    </form>
+                </div>
+            </div>
+        `);
 
-            // Append the new message
-            chatMessagesList.append(messageHtml);
+        // Attach form submission handler for the selected team
+        attachFormSubmission(teamId);
 
-            // Scroll to the bottom of the chat
-            scrollToBottom();
-        }
+        // Append existing messages
+        var chatMessagesList = $('#chat-messages-list-' + teamId);
+        chatMessagesList.empty();
 
-        // Load team messages dynamically
-        $(document).on('click', '.team-link', function(e) {
-            e.preventDefault(); // Prevent default link behavior
-            var teamId = $(this).data('team-id');
-            $.get('/teams/' + teamId + '/messages', function(data) {
-                var chatContainer = $('#chat-container');
-                chatContainer.html(`
-                    <div class="card card-primary">
-                        <div class="card-header">
-                            <h4 class="card-title text-center">Chat for Team ${teamId}</h4>
-                        </div>
-                        <div class="card-body">
-                            <ul class="list-group chat-messages-list" id="chat-messages-list-${teamId}" style="height: 400px; overflow-y: scroll;">
-                            </ul>
-                            <form id="chat-form">
-                                @csrf
-                                <div class="input-group">
-                                    <input type="text" id="message-input" name="message" class="form-control" placeholder="Type a message...">
-                                    <span class="input-group-append">
-                                        <button class="btn btn-primary" type="submit">Send</button>
-                                    </span>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                `);
+        data.forEach(function(message) {
+    appendMessageToChat(teamId, {
+        message_body: message.message,
+        sender_name: message.user.name,
+        sender_avatar: message.user.profile_photo_path ? message.user.profile_photo_path : null  // Pass profile_photo_path directly
+    }, message.user_id === {{ Auth::id() }});
+});
+    });
+});
 
-                // Attach form submission handler for the selected team
-                attachFormSubmission(teamId);
-
-                // Append existing messages
-                var chatMessagesList = $('#chat-messages-list-' + teamId);
-                chatMessagesList.empty();
-
-                data.forEach(function(message) {
-                    appendMessageToChat(teamId, {
-                        message_body: message.message,
-                        sender_name: message.user.name,
-                        sender_avatar: message.user.profile_photo_path ? `/storage/${message.user.profile_photo_path}` : '/images/default-avatar.png'
-                    }, message.user_id === {{ Auth::id() }});
-                });
-            });
-        });
     });
 </script>
 
