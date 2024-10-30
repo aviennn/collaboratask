@@ -38,6 +38,7 @@
         <h3 class="card-title">List of Teams</h3>
     </div>
     <div class="card-body">
+        <div class="table-responsive">
         <table id="teams-table" class="table table-bordered table-striped table-hover">
             <thead>
                 <tr>
@@ -101,6 +102,7 @@
                 @endforelse
             </tbody>
         </table>
+</div>
     </div>
 </div>
 

@@ -474,10 +474,16 @@ body.dark-mode #dataTableUnified_wrapper .pagination .paginate_button a.page-lin
 body.dark-mode #dataTableUnified_wrapper .pagination .paginate_button a.page-link:hover {
     color: #ffffff; /* Pure white text on hover for maximum visibility */
 }
-    /* Add this to your existing CSS */
 .task-card {
+    margin-bottom: 15px; /* Adds space between each card */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.kanban-column .card-body {
+    max-height: 600px; /* Adjust based on your layout */
+    overflow-y: auto; /* Allows scrolling if content overflows */
+    padding: 10px; /* Optional padding to give some space inside the column */
 }
 
 .task-card.dragging {
@@ -485,6 +491,14 @@ body.dark-mode #dataTableUnified_wrapper .pagination .paginate_button a.page-lin
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     transform: scale(1.05); /* Slightly scale up the card */
 }
+
+
+.kanban-column .card-body {
+    max-height: 600px; /* Adjust based on your layout */
+    overflow-y: auto; /* Allows scrolling if content overflows */
+    padding: 10px; /* Optional padding to give some space inside the column */
+}
+
 
 </style>
 <!-- Custom delete confirmation modal -->
@@ -529,7 +543,51 @@ body.dark-mode #dataTableUnified_wrapper .pagination .paginate_button a.page-lin
 <script>
 $(document).ready(function() {
     var dataTables = {};
+    var taskCard = null; // To store the card being dragged
+    var startX, startY; // To store the starting touch position
 
+
+    function enableTouchDrag() {
+        $('.task-card').on('touchstart', function(e) {
+            taskCard = e.target.closest('.task-card');
+            $(taskCard).addClass('dragging'); // Add dragging class
+            var touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+        });
+
+        $('.task-card').on('touchmove', function(e) {
+            e.preventDefault();
+            var touch = e.touches[0];
+            var deltaX = touch.clientX - startX;
+            var deltaY = touch.clientY - startY;
+
+            // Move the task card with touch
+            taskCard.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        });
+
+        $('.task-card').on('touchend', function(e) {
+    if (taskCard) {
+        $(taskCard).removeClass('dragging'); // Remove dragging class
+        taskCard.style.transform = ''; // Reset position
+
+        // Get the drop target
+        var targetColumn = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY)?.closest('.kanban-column');
+
+        if (targetColumn && targetColumn.querySelector('.card-body') && !targetColumn.querySelector('.card-body').contains(taskCard)) {
+            // Only append if taskCard is not already in this column
+            targetColumn.querySelector('.card-body').appendChild(taskCard);
+            var taskId = taskCard.id.split('-')[1];
+            updateTaskStatus(taskId, targetColumn.id);
+        }
+
+        // Reset the taskCard variable after handling
+        taskCard = null;
+    }
+});
+    }
+
+    enableTouchDrag();
     // Initialize DataTable for both task lists (My Tasks and Team Tasks)
     dataTables['dataTableUnified'] = $('#dataTableUnified').DataTable();  // My Tasks
     dataTables['teamTasksTable'] = $('#teamTasksTable').DataTable();  // Team Tasks
@@ -593,21 +651,21 @@ $(document).ready(function() {
     });
 
     $('.kanban-column').on('dragover', function(event) {
-        event.preventDefault();
+    event.preventDefault();
+});
+
+$('.kanban-column').on('drop', function(event) {
+    event.preventDefault();
+    var taskId = event.originalEvent.dataTransfer.getData("text");
+    var taskElement = document.getElementById(taskId);
+    var targetBody = $(this).find('.card-body').get(0); // Select the card-body within the column
+
+    if (targetBody) {
+        targetBody.appendChild(taskElement);
+        updateTaskStatus(taskId.split('-')[1], this.id); // Pass the column ID as the new status
+    }
     });
 
-    $('.kanban-column').on('drop', function(event) {
-        event.preventDefault();
-        var taskId = event.originalEvent.dataTransfer.getData("text");
-        var taskElement = document.getElementById(taskId);
-        var targetColumn = event.target.closest('.kanban-column');
-        if (targetColumn) {
-            targetColumn.querySelector('.card-body').appendChild(taskElement);
-            updateTaskStatus(taskId.split('-')[1], targetColumn.id);
-        }
-    });
-
-    // Update task status via AJAX after dragging in Kanban
     // Update task status via AJAX after dragging in Kanban
     function updateTaskStatus(taskId, status) {
     var statusMap = {
@@ -639,7 +697,7 @@ $(document).ready(function() {
     });
 }
 
-
+initializeView();
 // Move task in list view after status update
 function moveTaskInListView(taskId, status, dateStarted, duration) {
     // Locate the task row in the table using its task ID
